@@ -1,0 +1,70 @@
+ndt_slam:
+  scan_publisher_topic: "/normal_distribution"        # visualizer topi of ndt scan
+  map_publisher_topic: "/aligned_normal_distribution" # visualizer topic of ndt submap
+  scan_subscriber_topic: "/radar_2/spectrum/pcl2"     # pcl2 topic
+  imu_subscriber_topic: "/imu/transformed/data"       # imu topic in base_frame
+  odom_publisher_topic: "/ndt_odom"                   # odometry publisher topic 
+  fixed_frame: "map"                                  # map frame
+  odom_frame: "odom"                                  # odometry frame
+  base_frame: "base_link"                             # base frame, should be accurate for motion model
+  sensor_frame: "left_radar_link"                     # sensor frame
+  visualize_ogm: true                                 # visualize ogm
+  visualize_current_scan: true                        # visualize ndt of scam
+  visualize_current_map: true                         # visualize ndt submap
+  visualize_path: true                                # visualize pose graph
+  use_imu: true                                       # if use imu 
+  initialize_from_tf: true                            # if true, transform odom->base_link has to be available
+  visualizer_frequency: 0.5                           # trigger visualizer with this frequency
+  pose_graph_frequency: 0.2                           # trigger pose graph optimization with this frequency
+  search_loop_closure_frequency: 0.8                  # trigger loop closure search with this frequency
+
+local_fuser:
+  use_scan_context_as_loop_closure: true         # use this
+  compute_dfs_loop_closure: false                # you can use this matcher instead, but is not recommended
+  max_data_association_mahalanobis_dist: 0.5     # for csm, considere canditate node with maximum mahalanobis distance
+  
+  loop_sqrtI: [1.0, 0.0, 0.0,                    # d_x, d_y, d_th
+               0.0, 1.0, 0.0,
+               0.0, 0.0, 1.0]
+          
+radar_preprocessor:
+  beam_distance_increment_threshold: 0.04                 # connectivity criterion for beam-wise clustering. Sensor-dependent
+    
+ndt_matcher:
+  motion_sqrtI: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,      # x, y, theta (submap frame), v_x, v_y, v_th, a_x, a_y (robot frame)
+                 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+                 0.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0,
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0,
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 20.0, 0.0,
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 60.0]
+  initial_imu_bias: 0.0                            # initial value of imu bias
+  max_iteration: 200                               # in each graduated optimization step, limit number of iterations
+  pose_reject_translation: 2.0                     # if the estimate deviates more than this from intial guess, the initial guess is further considered
+  pose_reject_rotation: 2
+  use_analytic_expressions_for_optimization: false # only available if not using manifold
+
+  # use of csm by default deactivated and not recommended
+  csm_cost_threshold: 0.82           # if this cost is exceeded, do not evaluate pose candidate further
+  csm_linear_step: 0.4               # linear space between candidates in finest level
+  csm_max_px_accurate_range: 4.0     # angular resolution is defined based on this range
+  csm_n_iter: 2                      # number of levels
+  csm_window_angular: 0.45           # maximum angular search window
+  csm_window_linear: 4.5             # maximum linear search window
+
+ndt_map:
+  size_x: 50 # size of underlying map in cells
+  size_y: 50 
+  # resolution, max_neighbor_linf_dist, and min_points_per_cell are set depending on the environment 
+
+ogm_map:
+  size_x: 90 # size of underlying map in m
+  size_y: 40 
+  resolution: 0.1 # side length of OGM cell
+
+ndt_cell:
+  beam_cov: [0.0349208,     0, 0, 
+                     0, 0.001, 0, 
+                     0,     0, 10]
+  use_pndt: false # hard to tune, better not touch it

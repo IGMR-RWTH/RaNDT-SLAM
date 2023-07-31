@@ -1,0 +1,54 @@
+global_fuser:
+  loss_function_scale: 60.0                # scale of robust loss in pose graph optimization. Not needed if use_robust_loss is false
+  use_robust_loss: false                   # if true, use Huber Loss in pose graph optimization
+
+local_fuser:
+  insertion_step: 4                        # every n scan is considered a keyframe
+  loop_closure_gnc_steps: 1                # graduation steps in loop closure refinement (lcr). If omitted, set to same value as in local motion estimation
+  loop_closure_max_cs_divergence: 3.6      # cs divergence threshold
+  loop_closure_scale: 2.0                  # scale of robust loss function in lcr. If omitted, set to same value as in local motion estimation
+  loop_closure_weight: 50000.0             # weight of loop closure constraint in pose graph optimization
+  submap_size_poses: 130                   # number of states in each submap
+  submap_overlap: 20                       # for this number of states, also the previous submap is used in matchin
+  use_scan_context_as_loop_closure: true   # select scd for loop closure. Should always be true
+
+ndt_map:
+  max_neighbor_linf_distance: 4.0          # size of search window for neares neighbors
+  min_points_per_cell: 3                   # minimal number of points to generate distribution in cell
+  resolution: 1.0                          # side length of an NDT cell
+
+ndt_matcher:
+  gnc_control_parameter_divisor: 1.1       # k_mu to reduce convexity in each graduation step
+  gnc_steps: 3                             # number of graduation steps
+  lookup_distribution: true                # if true, use l2 distance between distributions. Else, l2 distance of the grid cells holding the distributions
+  loss_function_convexity: -1.5            # convexity of the robust loss function
+  loss_function_scale: 2.0                 # scale of the robust loss function
+  n_results_nn_lookup: 4                   # number of neighbors for each moving ndt cell
+  optimize_on_manifold: true               # if true, optimize over Lie group element, else over three vector representation
+  smoothing_steps: 3                       # lag size
+  use_constant_velocity_model: true        # if true, use constant velocity, else constant acceleration
+  use_intensity_as_dimension: true         # if true, use intensity in matching
+
+  ndt_weight: 50000.0                      # weight of ndt matching in local motion estimation
+  covariance_scaling_factor: 25.0          # weight of the motion model. The individual covariance matrix is given in the overall config
+  weight_imu: 64.0                         # weight of imu rotation estimate
+  weight_imu_bias: 750000.1                # weight if imu bias
+
+radar_preprocessor:
+  min_range: 0.6                # minimum range of sensor. Should filter out radome noise
+  max_range: 16.0               # maximum range of sensor
+  min_intensity: 6.0            # minimal intensity. Should filter out speckle noise
+                                                                 
+scan_context:                   # no need to tune, work pretty well out of the box
+  assumed_drift: 0.05           # odometric drift
+  dist_thresh: 0.6              # maximum combined descriptor and odometry distance
+  intensity_factor: 0.05        # multiplier for intensity values
+  max_radius: 15.0              # max range of descriptor
+  num_candidates_from_tree: 10  # in first lookup stage, retrieve this number of candidate
+  num_exclude_recent: 20        # the last n keyframes are not considered as keyframe
+  num_ring: 20                  # number of range bins
+  num_sector: 60                # number of azimuth bins 
+  odom_eps: 1.2                 # allowed linear displacement to consider same place
+  odom_weight: 0.25             # weight of odometry similarity in combined distance
+  search_ratio: 0.5             # only search ratio of keyframes
+  tree_making_period: 10        # rebuild tree after inserting n keyframes

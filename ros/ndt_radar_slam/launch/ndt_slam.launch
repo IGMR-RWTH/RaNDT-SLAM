@@ -1,0 +1,20 @@
+<launch>
+    <arg name="visualization" default="true"/>
+    <arg name="environment" default="mixed"/>
+    <arg name="base_frame" default="base_link"/>
+    <arg name="raw_imu_topic" default="/imu"/>
+
+    <rosparam file="$(find ndt_radar_slam)/config/ndt_radar_slam_base_parameters.yaml"  />
+    <rosparam file="$(find ndt_radar_slam)/config/parameters_$(arg environment).yaml"  />
+
+    <group if="$(arg visualization)">
+        <node name="ndt_visualization" pkg="ndt_radar_slam" type="ndt_visualization"/>
+    </group>
+
+    <node name="ndt_radar_slam" pkg="ndt_radar_slam" type="ndt_slam" output="screen"/>
+    <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer">
+        <remap from="imu_in" to="$(arg raw_imu_topic)"/>
+        <remap from="imu_out" to="/imu/transformed"/>
+        <param name="target_frame" value="$(arg base_frame)"/>
+    </node>
+</launch>
