@@ -2,6 +2,8 @@
 
 This package provides the Rader Normal Distribution Transform (RaNDT) SLAM.
 
+A benchmark data set is available at [Zenodo](https://zenodo.org/record/8199947).
+
 ## License
 
 This work is lincensed under the BSD-3 license, copyright 2023 Institute of Mechanism Theory, Machine Dynamics and Robotics - RWTH Aachen University.
