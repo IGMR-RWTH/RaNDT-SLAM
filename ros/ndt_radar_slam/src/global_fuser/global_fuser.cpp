@@ -57,7 +57,7 @@ void GlobalFuser::optimizePoseGraph(std::map<int, Pose>& poses_ref, const std::v
   options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
   ceres::Solver::Summary summary;
   ceres::Solve(options, &problem, &summary);
-  std::cout << summary.BriefReport() << '\n';
+  //std::cout << summary.BriefReport() << '\n';
 
   // get covariance
   ceres::Covariance::Options cov_options;

@@ -79,8 +79,6 @@ We suggest using them.
 
 If you want to deploy a different sensor, you have to set the parameters accordingly. The frames and topics are given in ndt_radar_slam_base_parameters.yaml. There, you can additionally choose not to use the IMU, or turn off visualization. The meaning of the parameters is explained in the config files.
 
-If you want to retune the configurations, read in the thesis for a detailed parameter study of several parameters.
-
 __Usage__
 
 Four parameters are considered in roslaunch:

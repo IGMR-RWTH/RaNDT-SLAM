@@ -231,16 +231,19 @@ public:
     const Eigen::Matrix<double,2,1> mean_diff = rotation * m_mean_ + translation - f_mean_;
     const Eigen::Matrix<double,1,2> mean_diff_transposed = mean_diff.transpose();
     const Eigen::Matrix<double,2,2> cov_inv = (rotation * m_cov_ * rotation.transpose() + f_cov_).inverse();
-    residuals[0] = mean_diff_transposed * cov_inv * mean_diff; 
+    residuals[0] = ceres::sqrt(mean_diff_transposed * cov_inv * mean_diff); 
 
     if (jacobians) {
-      if (jacobians[0]) {
-        jacobians[0][0] = 2.0 * mean_diff_transposed * cov_inv * Eigen::Vector2d::UnitX();
-        jacobians[0][1] = 2.0 * mean_diff_transposed * cov_inv * Eigen::Vector2d::UnitY();
+      if (jacobians[0]) {     
+        jacobians[0][0] = mean_diff_transposed * cov_inv * Eigen::Vector2d::UnitX();
+        jacobians[0][1] = mean_diff_transposed * cov_inv * Eigen::Vector2d::UnitY();
+        jacobians[0][0] /= residuals[0];
+        jacobians[0][1] /= residuals[0];
       }
       if (jacobians[1]) {
-        jacobians[1][0] = 2.0 * mean_diff_transposed * cov_inv * rotation_derivative * m_mean_; 
-        jacobians[1][0] += 2.0 * mean_diff_transposed * cov_inv * rotation * m_cov_ * rotation_derivative * cov_inv * mean_diff;
+        jacobians[1][0] = mean_diff_transposed * cov_inv * rotation_derivative * m_mean_; 
+        jacobians[1][0] += mean_diff_transposed * cov_inv * rotation * m_cov_ * rotation_derivative * cov_inv * mean_diff;
+        jacobians[1][0] /= residuals[0];
       }
     }
     return true;
@@ -278,16 +281,19 @@ public:
     const Eigen::Matrix<double,3,1> mean_diff = rotation * m_mean_ + translation - f_mean_;
     const Eigen::Matrix<double,1,3> mean_diff_transposed = mean_diff.transpose();
     const Eigen::Matrix<double,3,3> cov_inv = (rotation * m_cov_ * rotation.transpose() + f_cov_).inverse();
-    residuals[0] = mean_diff_transposed * cov_inv * mean_diff; 
+    residuals[0] = ceres::sqrt(mean_diff_transposed * cov_inv * mean_diff); 
 
     if (jacobians) {
       if (jacobians[0]) {
-        jacobians[0][0] = 2.0 * mean_diff_transposed * cov_inv * Eigen::Vector3d::UnitX();
-        jacobians[0][1] = 2.0 * mean_diff_transposed * cov_inv * Eigen::Vector3d::UnitY();
+        jacobians[0][0] = mean_diff_transposed * cov_inv * Eigen::Vector3d::UnitX();
+        jacobians[0][1] = mean_diff_transposed * cov_inv * Eigen::Vector3d::UnitY();
+        jacobians[0][0] /= residuals[0];
+        jacobians[0][1] /= residuals[0];
       }
       if (jacobians[1]) {
-        jacobians[1][0] = 2.0 * mean_diff_transposed * cov_inv * rotation_derivative * m_mean_; 
-        jacobians[1][0] += 2.0 * mean_diff_transposed * cov_inv * rotation * m_cov_ * rotation_derivative * cov_inv * mean_diff;
+        jacobians[1][0] = mean_diff_transposed * cov_inv * rotation_derivative * m_mean_; 
+        jacobians[1][0] += mean_diff_transposed * cov_inv * rotation * m_cov_ * rotation_derivative * cov_inv * mean_diff;
+        jacobians[1][0] /= residuals[0];
       }
     }
     return true;
