@@ -21,6 +21,7 @@ struct NDTMapParameters {
   double ogm_threshold;
   double max_neighbour_manhattan_distance;
   int min_points_per_cell;
+  bool visualize_ogm;
 
   NDTCellParameters ndt_cell_parameters;
 };
@@ -115,6 +116,7 @@ struct LocalFuserParameters {
   double loop_closure_max_cs_divergence;
   double loop_closure_weight;
   bool use_intensity_in_loop_closure;
+  bool visualize_ogm;
   double loop_closure_scale;
   double max_data_association_mahalanobis_dist;
   bool compute_dfs_loop_closure;
@@ -152,6 +154,8 @@ struct NDTSlamParameters {
   bool visualize_path;
   bool use_imu;
   bool initialize_from_tf;
+  bool online;
+  std::string rosbag_path;
   double visualizer_frequency;
   double pose_graph_frequency;
   double search_loop_closure_frequency;

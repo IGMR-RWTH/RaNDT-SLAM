@@ -178,12 +178,14 @@ void LocalFuser::processScan(const sensor_msgs::PointCloud2::ConstPtr& msg, std:
       _last_merged_map = _next_maps_to_insert.front();
 
       // trigger raytracing
-      while(read_on_queue_ || write_on_queue_) {}
-      write_on_queue_ = true;
-      for (auto& line: _next_max_to_insert.front()) {
-        raytracing_queue_.emplace_back(std::make_pair(smoothed_eigen_transform * baselink_to_radar_2d_, line));
+      if(parameters_.visualize_ogm) {
+        while(read_on_queue_ || write_on_queue_) {}
+        write_on_queue_ = true;
+        for (auto& line: _next_max_to_insert.front()) {
+          raytracing_queue_.emplace_back(std::make_pair(smoothed_eigen_transform * baselink_to_radar_2d_, line));
+        }
+        write_on_queue_ = false;
       }
-      write_on_queue_ = false;
       // merge into map
       _current_submap.mergeMapCell(_next_maps_to_insert.front());
 
@@ -270,6 +272,7 @@ void LocalFuser::processScan(const sensor_msgs::PointCloud2::ConstPtr& msg, std:
     current_submap_root_node_ = initial_pose;
     current_submap_root_node_id_ = current_node_id_;
     root_nodes_[n_finished_submaps_] = current_node_id_;
+    nodes[current_node_id_] = initial_pose;
     current_node_ = initial_pose;
     current_node_id_++;
     initial_node_set_ = true;
@@ -279,12 +282,14 @@ void LocalFuser::processScan(const sensor_msgs::PointCloud2::ConstPtr& msg, std:
     
     pcl::PointCloud<pcl::PointXYZI>::Ptr current_cloud = getTransformedScan();
     scManager_.makeAndSaveScancontextAndKeys(current_cloud, initial_pose.pos, initial_pose.traversed_dist);
-    while(read_on_queue_ || write_on_queue_) {}
-    write_on_queue_ = true;
-    for (auto& line: peak_detections) { 
-      raytracing_queue_.emplace_back(std::make_pair(baselink_to_radar_2d_, line));
+    if (parameters_.visualize_ogm) {
+      while(read_on_queue_ || write_on_queue_) {}
+      write_on_queue_ = true;
+      for (auto& line: peak_detections) { 
+        raytracing_queue_.emplace_back(std::make_pair(baselink_to_radar_2d_, line));
+      }
+      write_on_queue_ = false;
     }
-    write_on_queue_ = false;
     _current_submap.mergeMapCell(current_scan);
     _last_merged_map = current_scan;
   }

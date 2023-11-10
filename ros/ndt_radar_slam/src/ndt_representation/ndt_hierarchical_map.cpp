@@ -20,7 +20,9 @@ void HierarchicalMap::initialize(NDTMapParameters parameters, Eigen::Vector2f ce
   ogm_res_ = parameters.ogm_resolution;
   ogm_size_x_ = parameters_.size_x * parameters_.resolution / ogm_res_;
   ogm_size_y_ = parameters_.size_y * parameters_.resolution / ogm_res_;
-  simple_grid_.reset(new std::vector<int>(ogm_size_x_ * ogm_size_y_, 0));
+  if (parameters_.visualize_ogm) {
+    simple_grid_.reset(new std::vector<int>(ogm_size_x_ * ogm_size_y_, 0));
+  }
 }
 
 void HierarchicalMap::addClusters(const std::vector<pcl::PointCloud<pcl::PointXYZI>>& clusters, const std::vector<std::vector<std::pair<double, double>>>& angle_dists, const std::vector<std::tuple<double, double, double>>& max_detections) {

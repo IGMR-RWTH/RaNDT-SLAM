@@ -1,0 +1,26 @@
+<launch>
+    <arg name="visualization" default="false"/>
+
+    <rosparam file="$(find ndt_radar_slam)/config/parameters_oxford.yaml"  />
+
+    <group if="$(arg visualization)">
+        <node name="ndt_visualization" pkg="ndt_radar_slam" type="ndt_visualization"/>
+    </group>
+
+    <node name="odom_eval" pkg="cfear_radarodometry" type="eval_node" output="screen">
+      <param name="est_topic" value="/ndt_odom"/>
+      <param name="odom_gt_topic" value="/gt"/>
+      <param name="est_output_dir" value="/catkin_ws/randt_eval/odom/est/"/>
+      <param name="gt_output_dir" value="/catkin_ws/randt_eval/odom/gt/"/>
+      <param name="synced_callback" value="false"/>
+    </node>
+    <node name="slam_eval" pkg="cfear_radarodometry" type="eval_node" output="screen">
+      <param name="est_topic" value="/randt_path"/>
+      <param name="odom_gt_topic" value="/gt"/>
+      <param name="est_output_dir" value="/catkin_ws/randt_eval/slam/est/"/>
+      <param name="gt_output_dir" value="/catkin_ws/randt_eval/slam/gt/"/>
+      <param name="synced_callback" value="false"/>
+    </node>
+
+    <node name="ndt_radar_slam" pkg="ndt_radar_slam" type="ndt_slam" output="screen" required="true"/>
+</launch>

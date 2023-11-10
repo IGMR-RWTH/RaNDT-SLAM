@@ -32,6 +32,7 @@ find_package(catkin REQUIRED
 	ndt_msgs
   sensor_msgs
   nav_msgs
+  rosbag
 )
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include/eigen3")

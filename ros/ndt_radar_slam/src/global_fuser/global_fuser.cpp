@@ -50,15 +50,16 @@ void GlobalFuser::optimizePoseGraph(std::map<int, Pose>& poses_ref, const std::v
 
   // solve optimization
   ceres::Solver::Options options;
-  options.max_num_iterations = 2000;
+  options.max_num_iterations = 200000;
   options.sparse_linear_algebra_library_type = ceres::SUITE_SPARSE;
   options.preconditioner_type = ceres::SCHUR_JACOBI;
   options.num_threads = std::thread::hardware_concurrency();
   options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
   ceres::Solver::Summary summary;
   ceres::Solve(options, &problem, &summary);
-  //std::cout << summary.BriefReport() << '\n';
+  std::cout << summary.BriefReport() << '\n';
 
+  /*
   // get covariance
   ceres::Covariance::Options cov_options;
   cov_options.num_threads = options.num_threads;
@@ -83,6 +84,7 @@ void GlobalFuser::optimizePoseGraph(std::map<int, Pose>& poses_ref, const std::v
     covariance.GetCovarianceBlock(poses[i].pos.data(), &poses[i].rot, poses[i].cov_pos_rot.data());
     covariance.GetCovarianceBlock(&poses[i].rot, &poses[i].rot, &poses[i].cov_rot_rot);
   }
+  */
 
   for (auto & pose: poses) {
     pose.second.pose = Sophus::SE2d(pose.second.rot, pose.second.pos);

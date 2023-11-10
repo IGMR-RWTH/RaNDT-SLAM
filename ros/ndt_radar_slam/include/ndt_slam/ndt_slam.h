@@ -1,6 +1,8 @@
 #ifndef NDT_SLAM_H
 #define NDT_SLAM_H
 
+#define foreach BOOST_FOREACH
+
 #include <mutex>
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
@@ -15,6 +17,10 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/time_sequencer.h>
 #include <message_filters/cache.h>
+
+#include <boost/foreach.hpp>
+#include <rosbag/view.h>
+#include <rosbag/bag.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -70,6 +76,8 @@ class NDTSlam {
 		ros::Publisher _ndt_pub;
 		ros::Publisher _map_pub;
 		ros::Publisher _odom_pub;
+		ros::Publisher _path_odom_pub;
+    ros::Publisher pub_gt;
 		ros::Publisher _aligned_ndt_pub;
 		ros::Publisher _trajectory_pub;
 
@@ -88,6 +96,10 @@ class NDTSlam {
     sensor_msgs::Imu _last_used_imu_msg;
     std_msgs::Header _last_header;
     NDTSlamParameters parameters_;
+
+    // initilizers
+    void initializeOffline();
+    void initializeOnline();
 
     // callbacks
     void radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg);
