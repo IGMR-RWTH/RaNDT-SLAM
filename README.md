@@ -14,6 +14,7 @@ The package has following dependencies:
 - Ceres Solver
 - Sophus
 - Eigen
+
 **Only for Evaluation on Oxford dataset:**
 - [CFEAR radar odometry](https://github.com/dan11003/CFEAR_Radarodometry) and [Radar Kitti Benchmark](https://github.com/dan11003/radar_kitti_benchmark) (If you want to evaluate the Oxford sequences)
 
@@ -43,7 +44,7 @@ Optionally, you can use the provided Dockerfile.
 
 Build docker:
 ```console
-cd normal_distributions_slam
+cd RaNDT-SLAM
 docker build -t ndt_slam_docker .
 ```
 
