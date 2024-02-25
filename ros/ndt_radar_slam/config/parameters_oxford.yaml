@@ -18,14 +18,14 @@ ndt_slam:
   pose_graph_frequency: 0.2                           # trigger pose graph optimization with this frequency
   search_loop_closure_frequency: 0.8                  # trigger loop closure search with this frequency
   online: false
-  #rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-10-12-32-52-radar-oxford-10k/radar/2019-01-10-12-32-52-radar-oxford-10k.bag" 
-  #rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-16-13-09-37-radar-oxford-10k/radar/2019-01-16-13-09-37-radar-oxford-10k.bag" 
-  #rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-17-13-26-39-radar-oxford-10k/radar/2019-01-17-13-26-39-radar-oxford-10k.bag"
-  #rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-18-14-14-42-radar-oxford-10k/radar/2019-01-18-14-14-42-radar-oxford-10k.bag" 
-  #rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-18-15-20-12-radar-oxford-10k/radar/2019-01-18-15-20-12-radar-oxford-10k.bag" #the hard one
-  rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-10-11-46-21-radar-oxford-10k/radar/2019-01-10-11-46-21-radar-oxford-10k.bag"  
-  #rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-16-11-53-11-radar-oxford-10k/radar/2019-01-16-11-53-11-radar-oxford-10k.bag" 
-  #rosbag_path: "/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-18-14-46-59-radar-oxford-10k/radar/2019-01-18-14-46-59-radar-oxford-10k.bag" 
+  rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-10-12-32-52-radar-oxford-10k/radar/2019-01-10-12-32-52-radar-oxford-10k.bag" 
+  #rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-16-13-09-37-radar-oxford-10k/radar/2019-01-16-13-09-37-radar-oxford-10k.bag" 
+  #rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-17-13-26-39-radar-oxford-10k/radar/2019-01-17-13-26-39-radar-oxford-10k.bag"
+  #rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-18-14-14-42-radar-oxford-10k/radar/2019-01-18-14-14-42-radar-oxford-10k.bag" 
+  #rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-18-15-20-12-radar-oxford-10k/radar/2019-01-18-15-20-12-radar-oxford-10k.bag" 
+  #rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-10-11-46-21-radar-oxford-10k/radar/2019-01-10-11-46-21-radar-oxford-10k.bag"  
+  #rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-16-11-53-11-radar-oxford-10k/radar/2019-01-16-11-53-11-radar-oxford-10k.bag" 
+  #rosbag_path: "/root/catkin_ws/rosbags/oxford_raw/oxford-eval-sequences/2019-01-18-14-46-59-radar-oxford-10k/radar/2019-01-18-14-46-59-radar-oxford-10k.bag" 
 
 global_fuser:                                         
   loss_function_scale: 750                # scale of robust loss in pose graph optimization. Not needed if use_robust_loss is false

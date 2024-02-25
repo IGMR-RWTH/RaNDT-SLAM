@@ -15,7 +15,11 @@ local_fuser:
 ndt_map:
   max_neighbor_linf_distance: 4.0          # size of search window for neares neighbors
   min_points_per_cell: 5                   # minimal number of points to generate distribution in cell
-  resolution: 0.5                          # side length of an NDT cell
+  resolution: 0.5                          # side length of an NDT cellogm_map:
+
+ogm_map:
+  size_x: 90 # size of underlying map in m
+  size_y: 40 
 
 ndt_matcher:
   gnc_control_parameter_divisor: 1.3       # k_mu to reduce convexity in each graduation step

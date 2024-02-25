@@ -8,6 +8,10 @@ NDTSlam::NDTSlam(): _nh("~"), seq(ros::Duration(0.2), ros::Duration(0.01), 10) {
   
   std::cout << "created object!\n";
   readParameters();
+
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(ros::Duration(10.));
+  tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
+
   _cluster_pub = _nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/normal_distribution_pcl", 5);
 
   if (parameters_.initialize_from_tf) {
@@ -61,8 +65,6 @@ NDTSlam::NDTSlam(): _nh("~"), seq(ros::Duration(0.2), ros::Duration(0.01), 10) {
 }
 
 void NDTSlam::initializeOnline() {
-  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(ros::Duration(10.));
-  tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
 
   if (parameters_.use_imu) {
     imu_sub.subscribe(_nh, parameters_.imu_subscriber_topic, 1);
@@ -251,7 +253,8 @@ void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     geometry_msgs::TransformStamped base_to_map_msg, odom_to_map_msg;
     tf2::convert(base_to_map, base_to_map_msg);
     if (parameters_.online) {
-      odom_to_map_msg = tf_buffer_->transform(base_to_map_msg, parameters_.odom_frame);
+      odom_to_map_msg = tf_buffer_->transform(base_to_map_msg, parameters_.odom_frame);    
+      tf2::convert(odom_to_map_msg, odom_to_map);
     } 
     else {
       odom_to_map_msg = base_to_map_msg;
@@ -262,7 +265,7 @@ void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     ROS_ERROR("Transform from base_link to odom failed: %s", e.what());
   }
   tf2::Transform tf_transform = tf2::Transform(tf2::Quaternion( odom_to_map.getRotation() ),
-    tf2::Vector3( odom_to_map.getOrigin() ) ).inverse();
+  tf2::Vector3( odom_to_map.getOrigin() ) ).inverse();
   geometry_msgs::TransformStamped trans_msg;
   tf2::convert(tf_transform, trans_msg.transform);
   trans_msg.child_frame_id = parameters_.odom_frame;
