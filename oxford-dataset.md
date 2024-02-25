@@ -5,11 +5,11 @@ To evaluate the performance of RaNDT SLAM with the oxford dataset, several addit
 ## Dependencies
 
 Following additional dependencies are needed:
-- [CFEAR radarodometry] (https://github.com/dan11003/CFEAR_Radarodometry)
-- [Radar KITTI benchmark] (https://github.com/dan11003/radar_kitti_benchmark)
+- [CFEAR radarodometry](https://github.com/dan11003/CFEAR_Radarodometry)
+- [Radar KITTI benchmark](https://github.com/dan11003/radar_kitti_benchmark)
 
 Additionally, to convert the raw data of the dataset into bagfiles of the required format, an additional python tool is necessary:
-- [Oxford Radar Converter] (https://github.com/maxhilger/oxford_radar_converter)
+- [Oxford Radar Converter](https://github.com/maxhilger/oxford_radar_converter)
 
 Make sure that all of these packages are cloned in your workspace before building.
 
@@ -73,7 +73,7 @@ roslaunch ndt_radar_slam ndt_slam_oxford.launch
 For this step, use the Radar kitti benchmark. The results of the run are stored as follows:
 
 <pre>
-<your_ws>
+[your_ws]
 |
 └───randt_eval
     |
