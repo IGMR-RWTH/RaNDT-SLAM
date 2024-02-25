@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(ndt_radar_slam)
 
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17)
 
@@ -32,6 +33,7 @@ find_package(catkin REQUIRED
 	ndt_msgs
   sensor_msgs
   nav_msgs
+  rosbag
 )
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include/eigen3")

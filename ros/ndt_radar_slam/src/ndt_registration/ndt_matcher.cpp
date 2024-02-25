@@ -449,7 +449,7 @@ double Matcher::estimateLoopConstraint(Sophus::SE2d& trans, const Map& old_ndt, 
   std::vector<ceres::ResidualBlockId> ndt_residuals;
   
   // add all residuals
-  ndt_residuals = addNDTFactor(problem, two_representation_state, trans, old_ndt, new_ndt, use_intensity_as_dimension, parameters_.use_analytic_expressions_for_optimization, current_loss, 4);
+  ndt_residuals = addNDTFactor(problem, two_representation_state, trans, old_ndt, new_ndt, use_intensity_as_dimension, parameters_.use_analytic_expressions_for_optimization, current_loss, parameters_.n_results_kd_lookup);
   
   if (ndt_residuals.size() == 0) {
     std::cout << "WARNING: NO RESIDUALS ADDED!" << std::endl;

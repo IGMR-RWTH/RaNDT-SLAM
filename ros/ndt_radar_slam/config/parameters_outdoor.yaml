@@ -17,6 +17,10 @@ ndt_map:
   min_points_per_cell: 3                   # minimal number of points to generate distribution in cell
   resolution: 1.2                          # side length of an NDT cell
 
+ogm_map:
+  size_x: 40 # size of underlying map in m
+  size_y: 90 
+
 ndt_matcher:
   gnc_control_parameter_divisor: 1.1       # k_mu to reduce convexity in each graduation step
   gnc_steps: 3                             # number of graduation steps
@@ -38,7 +42,6 @@ radar_preprocessor:
   min_range: 0.6                   # minimum range of sensor. Should filter out radome noise
   max_range: 16.0                  # maximum range of sensor
   min_intensity: 6.0               # minimal intensity. Should filter out speckle noise                                                                  
-
 
 scan_context:                      # no need to tune, work pretty well out of the box
   assumed_drift: 0.05              # odometric drift

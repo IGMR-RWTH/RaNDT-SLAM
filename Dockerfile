@@ -3,8 +3,10 @@ FROM ros:noetic-perception
 # Install build dependencies
 RUN apt-get clean && \
     apt-get update && \
-    apt-get install -y gdb wget git ros-noetic-imu-tools ros-noetic-imu-pipeline software-properties-common python3-catkin-tools libgoogle-glog-dev libgflags-dev libatlas-base-dev libeigen3-dev libsuitesparse-dev libfmt-dev && \
+    apt-get install -y gdb wget git ros-noetic-imu-tools ros-noetic-imu-pipeline ros-noetic-tf-conversions software-properties-common python3-catkin-tools libgoogle-glog-dev libgflags-dev libatlas-base-dev libeigen3-dev libsuitesparse-dev libfmt-dev python3-pip && \
     rm -rf /var/lib/apt/lists/
+
+RUN pip3 install matplotlib scipy
 
 RUN wget ceres-solver.org/ceres-solver-2.1.0.tar.gz
 RUN tar zxf ceres-solver-2.1.0.tar.gz
@@ -27,6 +29,5 @@ RUN make install
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 USER root
-WORKDIR /home/root
+WORKDIR /root
 RUN source /ros_entrypoint.sh
-RUN echo "source /ros_entrypoint.sh" >> .bashrc

@@ -17,6 +17,10 @@ ndt_map:
   min_points_per_cell: 3                   # minimal number of points to generate distribution in cell
   resolution: 1.0                          # side length of an NDT cell
 
+ogm_map:
+  size_x: 90 # size of underlying map in m
+  size_y: 90 
+
 ndt_matcher:
   gnc_control_parameter_divisor: 1.1       # k_mu to reduce convexity in each graduation step
   gnc_steps: 3                             # number of graduation steps

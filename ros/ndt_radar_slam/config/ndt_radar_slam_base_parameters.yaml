@@ -17,6 +17,8 @@ ndt_slam:
   visualizer_frequency: 0.5                           # trigger visualizer with this frequency
   pose_graph_frequency: 0.2                           # trigger pose graph optimization with this frequency
   search_loop_closure_frequency: 0.8                  # trigger loop closure search with this frequency
+  online: true  
+  rosbag_path: ""
 
 local_fuser:
   use_scan_context_as_loop_closure: true         # use this
@@ -59,8 +61,6 @@ ndt_map:
   # resolution, max_neighbor_linf_dist, and min_points_per_cell are set depending on the environment 
 
 ogm_map:
-  size_x: 90 # size of underlying map in m
-  size_y: 40 
   resolution: 0.1 # side length of OGM cell
 
 ndt_cell:

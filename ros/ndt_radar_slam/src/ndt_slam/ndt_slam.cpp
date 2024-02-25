@@ -11,14 +11,7 @@ NDTSlam::NDTSlam(): _nh("~"), seq(ros::Duration(0.2), ros::Duration(0.01), 10) {
 
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(ros::Duration(10.));
   tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
- 
-  if (parameters_.use_imu) {
-    imu_sub.subscribe(_nh, parameters_.imu_subscriber_topic, 1);
-    cache.setCacheSize(static_cast<size_t>(150));
-    cache.connectInput(imu_sub);
-    ros::topic::waitForMessage<sensor_msgs::Imu>(parameters_.imu_subscriber_topic);  // deprecated: one could specify a desync time between imu and radar
-  }
-  
+
   _cluster_pub = _nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/normal_distribution_pcl", 5);
 
   if (parameters_.initialize_from_tf) {
@@ -46,8 +39,9 @@ NDTSlam::NDTSlam(): _nh("~"), seq(ros::Duration(0.2), ros::Duration(0.01), 10) {
   _local_fuser.initialize(parameters_.local_fuser_parameters, current_transform, initial_transform_radar_baselink);
 
   // ROS subscribers
-  _point_cloud_sub = _nh.subscribe(parameters_.scan_subscriber_topic, 1, &NDTSlam::radarCb, this);
+  //_point_cloud_sub = _nh.subscribe(parameters_.scan_subscriber_topic, 1, &NDTSlam::radarCb, this);
   _odom_pub = _nh.advertise<nav_msgs::Odometry>(parameters_.odom_publisher_topic, 1);
+  _path_odom_pub = _nh.advertise<nav_msgs::Odometry>("/randt_path", 1);
 
   if (parameters_.visualize_current_scan) {
     _ndt_pub = _nh.advertise<ndt_msgs::NormalDistributions>(parameters_.scan_publisher_topic, 5);
@@ -55,28 +49,168 @@ NDTSlam::NDTSlam(): _nh("~"), seq(ros::Duration(0.2), ros::Duration(0.01), 10) {
   if (parameters_.visualize_current_map) {
     _aligned_ndt_pub = _nh.advertise<ndt_msgs::NormalDistributions>(parameters_.map_publisher_topic, 5);
   }
+
+
+  _trajectory_pub = _nh.advertise<nav_msgs::Path>("/estimated_trajectory", 5);
+  _map_pub = _nh.advertise<nav_msgs::OccupancyGrid>("/ndt_map", 1);
+
+  if(parameters_.online) {
+    initializeOnline();
+    std::cout << "finished initialization!" << std::endl;
+  } else {
+    initializeOffline();
+    std::cout << "calculation finished, you can exit now!" << std::endl; 
+    std::exit(0);
+  }
+}
+
+void NDTSlam::initializeOnline() {
+
+  if (parameters_.use_imu) {
+    imu_sub.subscribe(_nh, parameters_.imu_subscriber_topic, 1);
+    cache.setCacheSize(static_cast<size_t>(150));
+    cache.connectInput(imu_sub);
+    ros::topic::waitForMessage<sensor_msgs::Imu>(parameters_.imu_subscriber_topic);  // deprecated: one could specify a desync time between imu and radar
+  }
+
+
+  // ROS subscribers
+  _point_cloud_sub = _nh.subscribe(parameters_.scan_subscriber_topic, 1, &NDTSlam::radarCb, this);
   // initialize ros timers
   ros::topic::waitForMessage<pcl::PointCloud<pcl::PointXYZI>>(parameters_.scan_subscriber_topic);
   
   visualization_timer = _nh.createTimer(ros::Duration(1.0/parameters_.visualizer_frequency), &NDTSlam::visualizeMap, this);
-  
-  raytracing_timer = _nh.createTimer(ros::Duration(0.05), &NDTSlam::raytrace, this);
+    
+  if (parameters_.visualize_ogm) {
+    raytracing_timer = _nh.createTimer(ros::Duration(0.05), &NDTSlam::raytrace, this);
+  }
   
   global_fuser_timer = _nh.createTimer(ros::Duration(1.0/parameters_.pose_graph_frequency), &NDTSlam::optimizePoseGraph, this);
 
   search_loop_closure_timer = _nh.createTimer(ros::Duration(1.0/parameters_.search_loop_closure_frequency), &NDTSlam::searchLoopClosure, this);
 
-  _trajectory_pub = _nh.advertise<nav_msgs::Path>("/estimated_trajectory", 5);
-  _map_pub = _nh.advertise<nav_msgs::OccupancyGrid>("/ndt_map", 1);
-  std::cout << "finished initialization!" << std::endl;
+}
+
+void NDTSlam::initializeOffline() {
+  rosbag::Bag bag;
+  bag.open(parameters_.rosbag_path, rosbag::bagmode::Read);
+  pub_gt = _nh.advertise<nav_msgs::Odometry>("/gt", 1);
+
+  std::vector<std::string> topics = {parameters_.scan_subscriber_topic, parameters_.imu_subscriber_topic,"/gt"};
+  rosbag::View view(bag, rosbag::TopicQuery(topics));
+
+  int frame = 0;
+
+
+  foreach(rosbag::MessageInstance const m, view)
+  {
+
+    if(!ros::ok())
+      break;
+
+    nav_msgs::Odometry::ConstPtr odom_msg = m.instantiate<nav_msgs::Odometry>();
+    if (odom_msg != NULL){
+      nav_msgs::Odometry msg_odom = *odom_msg;
+      msg_odom.header.frame_id = "world";
+      pub_gt.publish(msg_odom);
+      continue;
+    }
+    sensor_msgs::PointCloud2::ConstPtr image_msg = m.instantiate<sensor_msgs::PointCloud2>();
+    if(image_msg != NULL) {
+      std::cout << "frame: " << frame++ << std::endl;
+      ros::Time tinit = ros::Time::now();
+      radarCb(image_msg);
+      // search loop closures
+      _local_fuser.detectLoopClosures(nodes_, edges_, submap_idzs_, nodes_mutex_);
+      if (parameters_.visualize_ogm) {
+        _local_fuser.raytrace(ogm_mutex_); 
+      }
+
+      HierarchicalMap hmap;
+      Map vis_map;
+      std_msgs::Header header;
+      header = _last_header;
+      header.frame_id = parameters_.fixed_frame; 
+
+      _local_fuser.getSubmap(hmap);
+      Eigen::Affine2f global_transform;
+      global_transform = _local_fuser.getGlobalTransform();
+      if (parameters_.visualize_ogm) {
+        std::shared_ptr<nav_msgs::OccupancyGrid> map_ptr = _local_fuser.getOGM(ogm_mutex_); 
+        map_ptr->header = header;
+        _map_pub.publish(*map_ptr);
+      }
+
+      if (parameters_.visualize_current_map) {
+        hmap.transformMap(global_transform);
+        vis_map = hmap.getMap();
+        ndt_msgs::NormalDistributions aligned_ndt;
+        createVisualizationMsg(vis_map, header, aligned_ndt);
+        _aligned_ndt_pub.publish(aligned_ndt);
+      }
+
+      if (parameters_.visualize_path) {
+        nav_msgs::Path new_path;
+        new_path.header = header;
+        std::unique_lock<std::mutex> nl(nodes_mutex_);
+        for (const auto& node: nodes_) {
+          geometry_msgs::PoseStamped pose;
+          pose.pose.position.x = node.second.pose.translation()(0);
+          pose.pose.position.y = node.second.pose.translation()(1);
+          pose.pose.orientation.w = std::cos(node.second.pose.log()(2)/2);
+          pose.pose.orientation.z = std::sin(node.second.pose.log()(2)/2);
+          pose.header = stamps_.at(node.first);
+          new_path.poses.push_back(pose);
+        }
+        _trajectory_pub.publish(new_path);  
+      }
+      continue;
+    }
+
+    sensor_msgs::Imu::ConstPtr imu_msg = m.instantiate<sensor_msgs::Imu>();
+    if (imu_msg != NULL){
+      _local_fuser.processImu(imu_msg); // process latest imu message
+    }
+  }
+  bag.close();
+  _global_fuser.optimizePoseGraph(nodes_, edges_, nodes_mutex_, std::prev(nodes_.end())->first); 
+  _local_fuser.updateSubmaps(nodes_, submap_idzs_); // we update the submaps with their new poses
+  if (parameters_.visualize_path) {
+    nav_msgs::Path new_path;
+    std_msgs::Header header;
+    header.frame_id = parameters_.fixed_frame;
+    header.stamp = ros::Time::now();
+    new_path.header = header;
+    std::unique_lock<std::mutex> nl(nodes_mutex_);
+    for (const auto& node: nodes_) {
+      geometry_msgs::PoseStamped pose;
+      pose.pose.position.x = node.second.pose.translation()(0);
+      pose.pose.position.y = node.second.pose.translation()(1);
+      pose.pose.orientation.w = std::cos(node.second.pose.log()(2)/2);
+      pose.pose.orientation.z = std::sin(node.second.pose.log()(2)/2);
+      pose.header = stamps_.at(node.first);
+      new_path.poses.push_back(pose);
+    }
+    _trajectory_pub.publish(new_path);  
+  }
+  for (const auto& node: nodes_) {
+    nav_msgs::Odometry odom_msg;
+    odom_msg.header = stamps_.at(node.first);
+    odom_msg.child_frame_id = parameters_.base_frame;
+    odom_msg.pose.pose.position.x = node.second.pose.translation()(0);
+    odom_msg.pose.pose.position.y = node.second.pose.translation()(1);
+    odom_msg.pose.pose.position.z = 0;
+    odom_msg.pose.pose.orientation.w = std::cos(node.second.pose.log()(2)/2);
+    odom_msg.pose.pose.orientation.z = std::sin(node.second.pose.log()(2)/2);
+    _path_odom_pub.publish(odom_msg);
+    ros::Duration(0.05).sleep();
+  }
+  return;
 }
 
 void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
   _last_header = msg->header;
-
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener(tfBuffer);
-  if (parameters_.use_imu) {
+  if (parameters_.use_imu && parameters_.online) {
     _local_fuser.processImu(cache.getElemBeforeTime(cache.getLatestTime())); // process latest imu message
   }
   std::vector<pcl::PointCloud<pcl::PointXYZI>> _clusters;
@@ -118,15 +252,20 @@ void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
   {
     geometry_msgs::TransformStamped base_to_map_msg, odom_to_map_msg;
     tf2::convert(base_to_map, base_to_map_msg);
-    odom_to_map_msg = tf_buffer_->transform(base_to_map_msg, parameters_.odom_frame);
-    tf2::convert(odom_to_map_msg, odom_to_map);
+    if (parameters_.online) {
+      odom_to_map_msg = tf_buffer_->transform(base_to_map_msg, parameters_.odom_frame);    
+      tf2::convert(odom_to_map_msg, odom_to_map);
+    } 
+    else {
+      odom_to_map_msg = base_to_map_msg;
+    }
   }
   catch(tf2::TransformException& e)
   {
     ROS_ERROR("Transform from base_link to odom failed: %s", e.what());
   }
   tf2::Transform tf_transform = tf2::Transform(tf2::Quaternion( odom_to_map.getRotation() ),
-    tf2::Vector3( odom_to_map.getOrigin() ) ).inverse();
+  tf2::Vector3( odom_to_map.getOrigin() ) ).inverse();
   geometry_msgs::TransformStamped trans_msg;
   tf2::convert(tf_transform, trans_msg.transform);
   trans_msg.child_frame_id = parameters_.odom_frame;
@@ -298,10 +437,19 @@ void NDTSlam::readParameters() {
   if (!_nh.getParam("/ndt_slam/sensor_frame", ndt_slam_params.sensor_frame)){
     ROS_WARN("failed to load parameter");
   }
+  if (!_nh.getParam("/ndt_slam/rosbag_path", ndt_slam_params.rosbag_path)){
+    ROS_WARN("failed to load parameter");
+  }
+  if (!_nh.getParam("/ndt_slam/online", ndt_slam_params.online)){
+    ROS_WARN("failed to load parameter");
+    ndt_slam_params.online = true;
+  }
   if (!_nh.getParam("/ndt_slam/visualize_ogm", ndt_slam_params.visualize_ogm)){
     ndt_slam_params.visualize_ogm = false;
     ROS_INFO("set parameter visualize_ogm to default value false");
   }
+  local_fuser_params.visualize_ogm = ndt_slam_params.visualize_ogm;
+  map_params.visualize_ogm = ndt_slam_params.visualize_ogm;
   if (!_nh.getParam("/ndt_slam/visualize_current_scan", ndt_slam_params.visualize_current_scan)){
     ndt_slam_params.visualize_current_scan= false;
     ROS_INFO("set parameter visualize_current_scan to default value false");
