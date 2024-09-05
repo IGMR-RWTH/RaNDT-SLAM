@@ -6,7 +6,7 @@ A benchmark data set is available at [Zenodo](https://zenodo.org/record/8199947)
 
 ## Citation
 
-This work is part of a paper submitted to the International Conference on Intelligent Robots and Systems (IROS). Once the paper is accepted, we will list the according identifiers here. Until then, please cite the repository with authors "Maximilian Hilger and Nils Mandischer".
+This work is part of a paper accepted at the International Conference on Intelligent Robots and Systems (IROS). The pre-print is available at [arxiv](https://www.arxiv.org/abs/2408.11576). Please cite the arxiv paper until the IEEE publication is online.
 
 ## License
 
