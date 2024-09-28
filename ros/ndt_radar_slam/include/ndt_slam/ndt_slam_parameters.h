@@ -2,6 +2,7 @@
 #define NDT_SLAM_PARAMETERS_H
 
 #include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 
 namespace rc {
 namespace navigation {
@@ -170,3 +171,4 @@ struct Parameters {
 
 }}}
 #endif
+
