@@ -6,7 +6,17 @@ A benchmark data set is available at [Zenodo](https://zenodo.org/record/8199947)
 
 ## Citation
 
-This work is part of a paper accepted at the International Conference on Intelligent Robots and Systems (IROS). The pre-print is available at [arxiv](https://www.arxiv.org/abs/2408.11576). Please cite the arxiv paper until the IEEE publication is online.
+This work is part of a paper accepted at the International Conference on Intelligent Robots and Systems (IROS). The paper is available at [IEEExplore](https://ieeexplore.ieee.org/document/10802458), pre-print at [arxiv](https://www.arxiv.org/abs/2408.11576) or [paperswithcode](https://paperswithcode.com/paper/randt-slam-radar-slam-based-on-intensity). Please cite the paper if you use this repository for your work. Bibtex:
+
+~~~
+@INPROCEEDINGS{10802458,
+  author={Hilger, Maximilian and Mandischer, Nils and Corves, Burkhard},
+  booktitle={2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}, 
+  title={RaNDT SLAM: Radar SLAM Based on Intensity-Augmented Normal Distributions Transform}, 
+  year={2024},
+  pages={7831-7838},
+  doi={10.1109/IROS58592.2024.10802458}}
+~~~
 
 ## License
 
